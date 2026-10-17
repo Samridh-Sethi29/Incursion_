@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 215 32% 9%;
+    --foreground: 210 40% 98%;
+    --card: 217 33% 15%;
+    --card-foreground: 210 40% 98%;
+    --popover: 217 33% 15%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 25% 22%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 25% 20%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 25% 25%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 30% 22%;
+    --input: 217 30% 22%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.625rem;
+  }
+}
+
+body {
+  background-color: #0B1522;
+  color: #F8FAFC;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0B1522;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E324B;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2563EB;
+}
+
+/* FullCalendar styling overrides */
+.fc {
+  --fc-border-color: #1E324B;
+  --fc-page-bg-color: #101D2C;
+  --fc-neutral-bg-color: #172438;
+  --fc-today-bg-color: rgba(37, 99, 235, 0.12);
+  --fc-event-border-color: transparent;
+  color: #E2E8F0;
+}
+
+.fc-theme-standard th {
+  background-color: #101D2C;
+  color: #94A3B8;
+  padding: 10px 0;
+  font-size: 0.825rem;
+  font-weight: 600;
+  border-color: #1E324B;
+}
+
+.fc-theme-standard td {
+  border-color: #1E324B;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.25rem !important;
+  font-weight: 700;
+  color: #F8FAFC;
+}
+
+.fc .fc-button {
+  background-color: #172438 !important;
+  border-color: #1E324B !important;
+  color: #CBD5E1 !important;
+  font-size: 0.85rem !important;
+  font-weight: 500 !important;
+  border-radius: 0.5rem !important;
+  padding: 0.4rem 0.8rem !important;
+  box-shadow: none !important;
+}
+
+.fc .fc-button:hover {
+  background-color: #2563EB !important;
+  border-color: #2563EB !important;
+  color: #FFFFFF !important;
+}
+
+.fc .fc-button-active {
+  background-color: #2563EB !important;
+  border-color: #2563EB !important;
+  color: #FFFFFF !important;
+}
+
+.fc-daygrid-event {
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 0.775rem;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.fc-daygrid-event:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}

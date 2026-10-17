@@ -1,0 +1,124 @@
+// INCURSION: Conflict-Aware Events & Expenses Manager Prisma Schema
+// Supports both PostgreSQL and SQLite. Defaulting to SQLite for instant local execution.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String        @id @default(uuid())
+  name            String
+  email           String        @unique
+  role            String        @default("MEMBER") // ACM_CORE, CLUB_EXEC, MEMBER
+  clubAffiliation String        @default("ACM") // e.g. "ACM", "GDSC", "IEEE", "Rotaract", "CSI"
+  avatar          String?
+  createdEvents   Event[]       @relation("CreatedBy")
+  loggedExpenses  Expense[]     @relation("LoggedBy")
+  resolvedLogs    ConflictLog[] @relation("ResolvedBy")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Event {
+  id                  String        @id @default(uuid())
+  title               String
+  description         String
+  organizerClub       String        // "ACM Student Chapter", "GDSC", "IEEE CS", "Robotics Club", "Fine Arts Club"
+  eventType           String        // "TECHNICAL", "WORKSHOP", "HACKATHON", "CULTURAL", "SEMINAR", "SPORTS", "MEETING"
+  targetAudience      String        // "ALL_STUDENTS", "TECH_CS_IT", "FIRST_YEAR", "SENIORS", "MANAGEMENT_DESIGN"
+  venue               String        // "Main Auditorium", "CS Hall A", "Tech Lab 3", "Open Amphitheatre", "Seminar Hall 2"
+  startDate           DateTime
+  endDate             DateTime
+  status              String        @default("PENDING_REVIEW") // PENDING_REVIEW, VERIFIED, FLAGGED_CONFLICT, RESOLVED, REJECTED, COMPLETED
+  
+  // Conflict Metadata
+  conflictSeverity    String        @default("NONE") // NONE, LOW, MEDIUM, HIGH
+  conflictReason      String?       // Human-readable rationale for flagged overlap
+  
+  // Turnout & Institutional Memory
+  expectedAttendees   Int           @default(50)
+  actualAttendees     Int?          // Recorded post-event for institutional memory
+  budgetAllocated     Float         @default(0.0) // Budget estimated for event (INR)
+  academicYear        String        @default("2026-2027") // e.g., 2026-2027
+  semester            String        @default("Odd 2026")  // e.g., Odd 2026
+  
+  // Post-Event Learnings (Digital Memory for Future ACM Teams)
+  outcomeNotes        String?       // "Turnout exceeded expectation; HDMI hub needed for speaker; clash avoided with GDSC"
+  ratingScore         Int?          // 1-5 rating of event success
+  
+  // Relations
+  createdById         String?
+  createdBy           User?         @relation("CreatedBy", fields: [createdById], references: [id])
+  expenses            Expense[]
+  conflictsInitiated  ConflictLog[] @relation("ProposedEvent")
+  conflictsTargeted   ConflictLog[] @relation("ConflictingEvent")
+  
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+}
+
+model ConflictLog {
+  id                  String    @id @default(uuid())
+  proposedEventId     String
+  proposedEvent       Event     @relation("ProposedEvent", fields: [proposedEventId], references: [id], onDelete: Cascade)
+  conflictingEventId  String
+  conflictingEvent    Event     @relation("ConflictingEvent", fields: [conflictingEventId], references: [id], onDelete: Cascade)
+  
+  conflictType        String    // VENUE_CLASH, AUDIENCE_TIME_OVERLAP, SAME_DAY_CONGESTION
+  severity            String    // HIGH, MEDIUM, LOW
+  details             String    // Detailed explanation of clash
+  isResolved          Boolean   @default(false)
+  resolutionNotes     String?   // "Core team approved after rescheduling tech lab", "Override granted by ACM Chair"
+  resolvedAt          DateTime?
+  resolvedById        String?
+  resolvedBy          User?     @relation("ResolvedBy", fields: [resolvedById], references: [id])
+  
+  createdAt           DateTime  @default(now())
+}
+
+model Expense {
+  id              String    @id @default(uuid())
+  title           String
+  amount          Float     // e.g. 4500.00
+  category        String    // VENUE_BOOKING, REFRESHMENTS_FOOD, SWAG_PRIZES, SPEAKER_HONORARIUM, MARKETING_PRINTING, LOGISTICS_EQUIPMENT, MISCELLANEOUS
+  date            DateTime
+  description     String?
+  
+  // Associated Event (optional, some expenses can be general chapter ops)
+  eventId         String?
+  event           Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  
+  // Digital Receipt Attachment
+  receiptUrl      String?   // Image/PDF data URL or uploaded URL
+  receiptName     String?   // Original filename e.g. "Invoice_Refreshments_Dec24.pdf"
+  receiptType     String?   // "image/png", "application/pdf"
+  
+  // Verification and Accounting
+  status          String    @default("VERIFIED") // PENDING_APPROVAL, VERIFIED, REJECTED
+  semester        String    @default("Odd 2026")
+  academicYear    String    @default("2026-2027")
+  
+  loggedById      String?
+  loggedBy        User?     @relation("LoggedBy", fields: [loggedById], references: [id])
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model BudgetSettings {
+  id              String    @id @default("active_budget")
+  academicYear    String    @default("2026-2027")
+  semester        String    @default("Odd 2026")
+  totalBudget     Float     @default(50000.0) // ₹50,000 semester budget from problem statement example
+  capRefreshments Float     @default(15000.0)
+  capPrizes       Float     @default(15000.0)
+  capLogistics    Float     @default(10000.0)
+  capMarketing    Float     @default(5000.0)
+  capSpeaker      Float     @default(5000.0)
+  updatedAt       DateTime  @updatedAt
+}
